@@ -1,5 +1,5 @@
 Summary: Example VMOD for Varnish
-Name: vmod-example
+Name: vmod-transbody
 Version: 0.2
 Release: 1%{?dist}
 License: BSD

@@ -1,5 +1,5 @@
-Summary: Example VMOD for Varnish
-Name: vmod-example
+Summary: Body transformations VMOD for Varnish
+Name: vmod-transbody
 Version: 0.1
 Release: 1%{?dist}
 License: BSD
@@ -13,7 +13,7 @@ BuildRequires: varnish >= 4.0.2
 BuildRequires: varnish-libs-devel >= 4.0.2
 
 %description
-Example VMOD
+Body transformations VMOD
 
 %prep
 %setup -n libvmod-example-trunk

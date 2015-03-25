@@ -8,7 +8,8 @@ libvmod_transbody_la_LDFLAGS = -module -export-dynamic -avoid-version -shared
 libvmod_transbody_la_SOURCES = \
 	vcc_if.c \
 	vcc_if.h \
-	vmod_example.c
+	vmod_transbody.c \
+	vmod_core.c 
 
 vcc_if.c vcc_if.h: @VMODTOOL@ $(top_srcdir)/src/vmod_transbody.vcc
 	@VMODTOOL@ $(top_srcdir)/src/vmod_transbody.vcc

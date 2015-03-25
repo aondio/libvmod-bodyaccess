@@ -1,0 +1,60 @@
+varnishtest "test rematch matchin on binary req.body"
+server s1 {
+	rxreq
+	expect req.bodylen > 12
+	txresp
+	rxreq
+	txresp
+} -start
+
+# rematch_req_body is case sensitive.
+varnish v1 -vcl+backend {
+	import transbody from "${vmod_topbuild}/src/.libs/libvmod_transbody.so";
+	import ${vmod_std};
+	sub vcl_recv {
+		transbody.cache_req_body(10KB);
+	set req.http.x-boolean2 = transbody.rematch_req_body("aRNI");
+		set req.http.x-boolean1 = transbody.rematch_req_body(".*");
+		set req.http.x-boolean3 = transbody.rematch_req_body("a");
+		set req.http.x-boolean4 = transbody.rematch_req_body("F");
+	}
+
+	sub vcl_deliver {
+		set resp.http.x-boolean1 = req.http.x-boolean1;
+		set resp.http.x-boolean2 = req.http.x-boolean2;
+		set resp.http.x-boolean3 = req.http.x-boolean3;
+		set resp.http.x-boolean4 = req.http.x-boolean4;
+	}
+} -start
+
+varnish v1 -cliok "param.set debug +syncvsl"
+varnish v1 -cliok "param.set fetch_chunksize 4k"
+
+client c1 {
+	txreq -req "POST" -body {VarNISH}
+	rxresp
+
+	expect resp.http.x-boolean2 == 0
+	expect resp.http.x-boolean3 == 1
+	expect resp.http.x-boolean4 == 0
+} -run
+
+varnish v1 -cliok "param.set debug +syncvsl"
+varnish v1 -cliok "param.set fetch_chunksize 4k"
+
+client c2 {
+	txreq -req POST -nolen -hdr "Transfer-encoding: chunked"
+	chunked {a5e2e2e1c2e2}
+	delay .2
+	chunkedlen 4090
+	delay .2
+	chunked {VARNISH}
+	delay .2
+	chunked { }
+	chunked {FOO}
+	delay .2
+	chunkedlen 0
+	rxresp
+	expect resp.http.x-boolean1 == 1
+	expect resp.http.x-boolean2 == 0
+} -run

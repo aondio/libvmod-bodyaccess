@@ -81,7 +81,6 @@ VRB_Cache(struct req *req, ssize_t maxsize)
 			    req->h1.bytes_yet : cache_param->fetch_chunksize);
 			if (st == NULL) {
 				req->req_body_status = REQ_BODY_FAIL;
-				req->doclose = SC_RX_BODY;
 				l = -1;
 				break;
 			} else {
@@ -92,8 +91,10 @@ VRB_Cache(struct req *req, ssize_t maxsize)
 		l = st->space - st->len;
 		l = http1_iter_req_body(req, req->req_body_status,
 		    st->ptr + st->len, l);
-		if( req->req_body_status== REQ_BODY_CHUNKED)
+
+		if (req->req_body_status == REQ_BODY_CHUNKED)
 			req->req_bodybytes += l;
+
 		if (l < 0) {
 			req->doclose = SC_RX_BODY;
 			break;
@@ -104,7 +105,7 @@ VRB_Cache(struct req *req, ssize_t maxsize)
 			STV_free(st);
 			STV_close();
 			l = -1;
-			return -1;
+			break;
 		}
 		if (l > 0) {
 			l2 += l;
@@ -153,15 +154,15 @@ concat_req_body(struct req *req, void *priv, void *ptr, size_t len)
 	return (!WS_Copy(ws, ptr, len));
 }
 
-struct vmod
-vmod_blob_req_body(VRT_CTX, struct vmod vmod)
+void
+VRB_Blob(VRT_CTX, struct vmod *vmod)
 {
 	struct vmod *p;
 	char *ws_f;
 	ssize_t l;
 
-	if (vmod.priv) {
-		return vmod;
+	if (vmod->priv) {
+		return;
 	}
 
 	CHECK_OBJ_NOTNULL(ctx, VRT_CTX_MAGIC);
@@ -170,13 +171,13 @@ vmod_blob_req_body(VRT_CTX, struct vmod vmod)
 	if (ctx->req->req_body_status != REQ_BODY_CACHED){
 		VSLb(ctx->vsl, SLT_VCL_Error,
 		    "Uncached req.body");
-		return vmod;
+		return;
 	}
 
 	assert(ctx->req->req_body_status == REQ_BODY_CACHED);
 	p =(void*)WS_Alloc(ctx->ws, sizeof *p);
 	AN(p);
-	vmod.priv = p;
+	vmod->priv = p;
 
 	ws_f = WS_Snapshot(ctx->ws);
 	AN(ws_f);
@@ -187,10 +188,11 @@ vmod_blob_req_body(VRT_CTX, struct vmod vmod)
 		    "Iteration on req.body didn't succeed.");
 		WS_Reset(ctx->ws, ws_f);
 		memset(p, 0, sizeof *p);
-		vmod.len = -1;
+		vmod->len = -1;
+		return;
 	}
 
-	vmod.len = ctx->req->req_bodybytes;
-	vmod.priv =  ws_f;
-	return vmod;
+	vmod->len = ctx->req->req_bodybytes;
+	vmod->priv = ws_f;
+	return;
 }

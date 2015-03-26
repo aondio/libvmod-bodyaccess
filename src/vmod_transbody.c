@@ -27,7 +27,7 @@ vmod_hash_req_body(VRT_CTX)
 		return;
 	}
 
-	vmod_blob_req_body(ctx, priv_top);
+	VRB_Blob(ctx,&priv_top);
 
 	HSH_AddBytes(ctx->req, priv_top.priv,  priv_top.len);
 
@@ -49,37 +49,39 @@ vmod_len_req_body(VRT_CTX)
 	return (ctx->req->req_bodybytes);
 }
 
-
 VCL_INT
-vmod_rematch_req_body(VRT_CTX, struct vmod_priv *priv_call, VCL_STRING re)
+vmod_rematch_req_body(VRT_CTX, struct vmod_priv *priv_call, VCL_STRING re,
+    VCL_INT limit)
 {
+ 	struct vmod priv_top = { 0 };
 	const char *error;
 	int erroroffset;
 	vre_t *t = NULL;
 	int i;
-	struct vmod priv_top = { 0 };
 
 	CHECK_OBJ_NOTNULL(ctx, VRT_CTX_MAGIC);
 	AN(re);
 
 	if(priv_call->priv == NULL) {
 		t =  VRE_compile(re, 0, &error, &erroroffset);
-		priv_call->priv = t;
-		priv_call->free = free;
 
 		if(t == NULL) {
 			VSLb(ctx->vsl, SLT_VCL_Error,
 			    "Regular expression not valid");
 			return (-1);
 		}
+
+		priv_call->priv = t;
+		priv_call->free = free;
+
 	}
-	cache_param->vre_limits.match = 10000;
-	cache_param->vre_limits.match_recursion = 10000;
-	priv_top = vmod_blob_req_body(ctx, priv_top);
-	VSL(SLT_Debug, 0, "priv_top len %zd", priv_top.len);
-	VSL(SLT_Debug, 0, "priv_top BLOB %s", (char*)priv_top.priv);
+
+	cache_param->vre_limits.match = limit;
+	cache_param->vre_limits.match_recursion = limit;
+
+	VRB_Blob(ctx, &priv_top);
 	i = VRE_exec(priv_call->priv, priv_top.priv, priv_top.len, 0, 0,
-	    NULL, 0,&cache_param->vre_limits);
+	    NULL, 0, &cache_param->vre_limits);
 
 	if (i > 0)
 		return (1);

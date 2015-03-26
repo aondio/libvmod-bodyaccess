@@ -1,22 +1,23 @@
-varnishtest "test rematch matchin on binary req.body"
+varnishtest "test regex match on req body"
+
 server s1 {
 	rxreq
-	expect req.bodylen > 12
 	txresp
 	rxreq
 	txresp
 } -start
 
 # rematch_req_body is case sensitive.
+
 varnish v1 -vcl+backend {
 	import transbody from "${vmod_topbuild}/src/.libs/libvmod_transbody.so";
 	import ${vmod_std};
 	sub vcl_recv {
 		transbody.cache_req_body(10KB);
-	set req.http.x-boolean2 = transbody.rematch_req_body("aRNI");
-		set req.http.x-boolean1 = transbody.rematch_req_body(".*");
-		set req.http.x-boolean3 = transbody.rematch_req_body("a");
-		set req.http.x-boolean4 = transbody.rematch_req_body("F");
+		set req.http.x-boolean2 = transbody.rematch_req_body("aRNI", 10000);
+		set req.http.x-boolean1 = transbody.rematch_req_body(".*", 10000);
+		set req.http.x-boolean3 = transbody.rematch_req_body("a", 10000);
+		set req.http.x-boolean4 = transbody.rematch_req_body("F", 10000);
 	}
 
 	sub vcl_deliver {
@@ -33,7 +34,6 @@ varnish v1 -cliok "param.set fetch_chunksize 4k"
 client c1 {
 	txreq -req "POST" -body {VarNISH}
 	rxresp
-
 	expect resp.http.x-boolean2 == 0
 	expect resp.http.x-boolean3 == 1
 	expect resp.http.x-boolean4 == 0

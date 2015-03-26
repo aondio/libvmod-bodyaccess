@@ -1,4 +1,4 @@
-varnishtest "Test std.len_req_body"
+varnishtest "Test len of req body"
 
 server s1 {
 	rxreq

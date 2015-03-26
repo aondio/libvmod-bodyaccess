@@ -1,4 +1,4 @@
-varnishtest "Test std.hash_req_body"
+varnishtest "Test hash on req body"
 
 server s1 {
 	rxreq
@@ -24,6 +24,7 @@ varnish v1 -vcl+backend {
 	}
 
 } -start
+
 client c1 {
 	txreq -req POST -nolen -hdr "Transfer-encoding: chunked"
 	chunked {BLAS}
@@ -31,7 +32,6 @@ client c1 {
 	chunkedlen 110
 	expect_close
 } -run
-
 
 client c1 {
 	txreq -req POST -nolen -hdr "Transfer-encoding: chunked"
@@ -45,9 +45,6 @@ client c1 {
 	rxresp
 } -run
 
-
-
-
 client c2 {
 	txreq -req POST -url "/banane" -body "FOOBAR"
 	rxresp
@@ -57,4 +54,3 @@ client c2 {
 	txreq -req GET -url "/banane" -body "FOOBAR"
 	rxresp
 } -run
-

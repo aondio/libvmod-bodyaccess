@@ -1,6 +1,6 @@
 $Module transbody 3 transbody VMOD
 
-$Function INT rematch_req_body(PRIV_CALL, STRING re)
+$Function INT rematch_req_body(PRIV_CALL, STRING re, INT limit)
 
 $Function VOID cache_req_body(BYTES size)
 

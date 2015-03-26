@@ -1,10 +1,10 @@
-============
-vmod_example
-============
+==============
+vmod_transbody
+==============
 
-----------------------
-Varnish Example Module
-----------------------
+------------------------
+Varnish Transbody Module
+------------------------
 
 :Date: 2015-03-03
 :Version: 1.0
@@ -13,33 +13,105 @@ Varnish Example Module
 SYNOPSIS
 ========
 
-import example;
+import transbody;
 
 DESCRIPTION
 ===========
 
-Example Varnish vmod demonstrating how to write an out-of-tree Varnish vmod.
-
-Implements the traditional Hello World as a vmod.
+Varnish vmod that let you do transformations on the requestbody.
 
 FUNCTIONS
 =========
 
-hello
------
+cache_req_body
+--------------
 
 Prototype
         ::
 
-                hello(STRING S)
+                cache_req_body(BYTES size)
 Return value
-	STRING
+	VOID
 Description
-	Returns "Hello, " prepended to S
+	Cache the req.body if it is smaller than *size*.
+
+        Caching the req.body makes it possible to retry pass
+        operations (POST, PUT).
 Example
         ::
 
-                set resp.http.hello = example.hello("World");
+                std.cache_req_body(1KB);
+
+        This will cache the req.body if its size is smaller than 1KB.
+
+len_req_body
+------------
+
+Prototype
+        ::
+
+                len_req_body()
+Return value
+        INT
+Description
+        Returns the request body length.
+
+	Note that the request body must be buffered.
+Example
+        ::
+
+                | if (std.cache_req_body(1KB)) {
+		|     set req.http.x-len = std.len_req_body();
+		| }
+
+hash_req_body
+-------------  
+
+Prototype
+        ::
+
+                len_req_body()
+Return value
+        VOID
+Description
+        Adds available request body bytes to the lookup hash key.
+	Note that this function can only be used in vcl_hash and
+	the request body must be buffered.
+Example
+        ::
+
+                | sub vcl_recv {
+		|     std.cache_req_body(1KB);
+		| }
+		|
+		| sub vcl_hash{
+		|     std.hash_req_body();
+		| }
+
+rematch_req_body
+----------------
+
+Prototype
+        ::
+
+                rematch_req_body(PRIV_CALL, STRING re, INT limit)
+Return value  
+        INT
+Description
+        Returns -1 if an error occurred.
+	Returns 0 if the request body doesn't contain the string *re*.
+	Returns 1 if the request body contains the string *re*.
+
+	Note that the comparison is case sensitive and the
+	request body must be buffered.
+Example
+        ::
+
+                | std.cache_req_body(1KB);
+		|
+		| if (std.regex_req_body("FOO") == 1) {
+		|    std.log("is true");
+		| }
 
 INSTALLATION
 ============
@@ -70,15 +142,6 @@ Make targets:
 * make install - installs your vmod.
 * make check - runs the unit tests in ``src/tests/*.vtc``
 * make distcheck - run check and prepare a tarball of the vmod.
-
-In your VCL you could then use this vmod along the following lines::
-
-        import example;
-
-        sub vcl_deliver {
-                # This sets resp.http.hello to "Hello, World"
-                set resp.http.hello = example.hello("World");
-        }
 
 COMMON PROBLEMS
 ===============

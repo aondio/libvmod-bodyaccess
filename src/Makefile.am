@@ -9,7 +9,8 @@ libvmod_transbody_la_SOURCES = \
 	vcc_if.c \
 	vcc_if.h \
 	vmod_transbody.c \
-	vmod_core.c 
+	vmod_core.c \
+	vmod_respbody.c 
 
 vcc_if.c vcc_if.h: @VMODTOOL@ $(top_srcdir)/src/vmod_transbody.vcc
 	@VMODTOOL@ $(top_srcdir)/src/vmod_transbody.vcc

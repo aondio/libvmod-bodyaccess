@@ -7,3 +7,10 @@ $Function VOID cache_req_body(BYTES size)
 $Function VOID hash_req_body()
 
 $Function INT len_req_body()
+
+
+
+
+$Function INT rematch_resp_body(PRIV_CALL, STRING re, INT limit)
+
+$Function INT len_resp_body()

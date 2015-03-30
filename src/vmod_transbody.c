@@ -1,7 +1,7 @@
 #include "vmod_core.h"
 
 VCL_VOID
-vmod_cache_req_body(VRT_CTX, double maxsize)
+vmod_buffer_req_body(VRT_CTX, double maxsize)
 {
 	CHECK_OBJ_NOTNULL(ctx, VRT_CTX_MAGIC);
 	CHECK_OBJ_NOTNULL(ctx->req, REQ_MAGIC);

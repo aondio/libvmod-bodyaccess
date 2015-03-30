@@ -1,4 +1,21 @@
 #include "vmod_core.h"
+#include <sys/time.h>
+
+double
+VTIM_real(void)
+{
+#ifdef HAVE_CLOCK_GETTIME
+        struct timespec ts;
+
+        AZ(clock_gettime(CLOCK_REALTIME, &ts));
+        return (ts.tv_sec + 1e-9 * ts.tv_nsec);
+#else
+        struct timeval tv;
+
+        AZ(gettimeofday(&tv, NULL));
+        return (tv.tv_sec + 1e-6 * tv.tv_usec);
+#endif
+}
 
 ssize_t
 http1_iter_req_body(struct req *req, enum req_body_state_e bs,
@@ -130,7 +147,7 @@ VRB_Cache(struct req *req, ssize_t maxsize)
 
 		req->req_body_status = REQ_BODY_CACHED;
 	}
-//	VSLb_ts_req(req, "ReqBody", VTIM_real());
+	VSLb_ts_req(req, "ReqBody", VTIM_real());
 	return (l);
 }
 

@@ -26,12 +26,13 @@ varnish v1 -vcl+backend {
 		set resp.http.x-boolean3 = req.http.x-boolean3;
 		set resp.http.x-boolean4 = req.http.x-boolean4;
 	}
-} -start
+}
 
 varnish v1 -cliok "param.set debug +syncvsl"
 varnish v1 -cliok "param.set fetch_chunksize 4k"
 varnish v1 -cliok "param.set pcre_match_limit 10000"
 varnish v1 -cliok "param.set pcre_match_limit_recursion 10000"
+varnish v1 -start
 
 client c1 {
 	txreq -req "POST" -body {VarNISH}

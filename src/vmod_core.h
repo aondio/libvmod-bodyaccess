@@ -20,4 +20,4 @@ void HSH_AddBytes(const struct req *req, const void *buf, size_t len);
 ssize_t http1_iter_req_body(struct req *req, enum req_body_state_e bs,
     void *buf, ssize_t len);
 void VRB_Blob(VRT_CTX, struct vmod *vmod);
-int VRB_Cache(struct req *req, ssize_t maxsize);
+int VRB_Buffer(struct req *req, ssize_t maxsize);

@@ -8,10 +8,10 @@ vmod_buffer_req_body(VRT_CTX, double maxsize)
 
 	if (ctx->method != VCL_MET_RECV) {
 		VSLb(ctx->vsl, SLT_VCL_Error,
-		    "req.body can only be cached in vcl_recv{}");
+		    "req.body can only be buffered in vcl_recv{}");
 			return;
 	}
-	VRB_Cache(ctx->req, maxsize);
+	VRB_Buffer(ctx->req, maxsize);
 }
 
 
@@ -23,18 +23,17 @@ vmod_hash_req_body(VRT_CTX)
 
 	if (ctx->req->req_body_status != REQ_BODY_CACHED) {
 		VSLb(ctx->vsl, SLT_VCL_Error,
-		   "Uncached req.body");
+		   "Unbuffered req.body");
 		return;
 	}
 
 	if (ctx->method != VCL_MET_HASH) {
 		VSLb(ctx->vsl, SLT_VCL_Error,
-		    "Hash_Req_Body can only be used in vcl_hash{}");
+		    "hash_req_body can only be used in vcl_hash{}");
 		return;
 	}
 
 	VRB_Blob(ctx, &priv_top);
-
 	HSH_AddBytes(ctx->req, priv_top.priv,  priv_top.len);
 
 }
@@ -47,7 +46,7 @@ vmod_len_req_body(VRT_CTX)
 
 	if (ctx->req->req_body_status != REQ_BODY_CACHED) {
 		VSLb(ctx->vsl, SLT_VCL_Error,
-		   "Uncached req.body");
+		   "Unbuffered req.body");
 		return (-1);
 	}
 
@@ -65,11 +64,24 @@ vmod_rematch_req_body(VRT_CTX, struct vmod_priv *priv_call, VCL_STRING re,
 	int i;
 
 	CHECK_OBJ_NOTNULL(ctx, VRT_CTX_MAGIC);
+
+	if (ctx->req->req_body_status != REQ_BODY_CACHED) {
+		VSLb(ctx->vsl, SLT_VCL_Error,
+		   "Unbuffered req.body");
+		return(-1);
+	}
+
+	if (ctx->method != VCL_MET_RECV) {
+		VSLb(ctx->vsl, SLT_VCL_Error,
+		    "rematch_req_body can be used only in vcl_recv{}");
+		return (-1);
+	}
+
 	AN(re);
 
 	if(priv_call->priv == NULL) {
 		t =  VRE_compile(re, 0, &error, &erroroffset);
-		if(t == NULL) {
+		if (t == NULL) {
 			VSLb(ctx->vsl, SLT_VCL_Error,
 			    "Regular expression not valid");
 			return (-1);

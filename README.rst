@@ -18,31 +18,33 @@ import transbody;
 DESCRIPTION
 ===========
 
-Varnish vmod that let you do transformations on the requestbody.
+Varnish vmod that lets you do transformations on the request body.
 
 FUNCTIONS
 =========
 
-cache_req_body
---------------
+buffer_req_body
+---------------
 
 Prototype
         ::
 
-                cache_req_body(BYTES size)
+                buffer_req_body(BYTES size)
 Return value
 	VOID
 Description
-	Cache the req.body if it is smaller than *size*.
+	Buffers the req.body if it is smaller than *size*.
 
         Caching the req.body makes it possible to retry pass
         operations (POST, PUT).
+
+	Note that this function can be used only in vcl_recv.
 Example
         ::
 
-                std.cache_req_body(1KB);
+                bodytrans.buffer_req_body(1KB);
 
-        This will cache the req.body if its size is smaller than 1KB.
+        This will buffer the req.body if its size is smaller than 1KB.
 
 len_req_body
 ------------
@@ -60,8 +62,8 @@ Description
 Example
         ::
 
-                | if (std.cache_req_body(1KB)) {
-		|     set req.http.x-len = std.len_req_body();
+                | if (bodytrans.cache_req_body(1KB)) {
+		|     set req.http.x-len = bodytrans.len_req_body();
 		| }
 
 hash_req_body
@@ -81,11 +83,11 @@ Example
         ::
 
                 | sub vcl_recv {
-		|     std.cache_req_body(1KB);
+		|     bodytrans.cache_req_body(1KB);
 		| }
 		|
 		| sub vcl_hash{
-		|     std.hash_req_body();
+		|     bodytrans.hash_req_body();
 		| }
 
 rematch_req_body

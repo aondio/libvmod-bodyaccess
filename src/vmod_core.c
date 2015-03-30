@@ -62,7 +62,7 @@ http1_iter_req_body(struct req *req, enum req_body_state_e bs,
 }
 
 int
-VRB_Cache(struct req *req, ssize_t maxsize)
+VRB_Buffer(struct req *req, ssize_t maxsize)
 {
 	struct storage *st;
 	ssize_t l, l2;
@@ -80,7 +80,7 @@ VRB_Cache(struct req *req, ssize_t maxsize)
 	case REQ_BODY_PRESENT:
 		break;
 	default:
-		WRONG("Wrong req_body_status in HTTP1_CacheReqBody()");
+		WRONG("Wrong req_body_status");
 	}
 
 	if (req->req_bodybytes > maxsize) {
@@ -88,8 +88,8 @@ VRB_Cache(struct req *req, ssize_t maxsize)
 		req->doclose = SC_RX_BODY;
 		return (-1);
 	}
-	l2 = 0;
 
+	l2 = 0;
 	st = NULL;
 	do {
 		if (st == NULL) {
@@ -133,8 +133,6 @@ VRB_Cache(struct req *req, ssize_t maxsize)
 	} while (l > 0);
 	if (l == 0) {
 		req->req_bodybytes = l2;
-		/* We must update also the "pristine" req.* copy */
-
 		http_Unset(req->http0, H_Content_Length);
 		http_Unset(req->http0, H_Transfer_Encoding);
 		http_PrintfHeader(req->http0, "Content-Length: %ju",
@@ -178,12 +176,12 @@ VRB_Blob(VRT_CTX, struct vmod *vmod)
 	char *ws_f;
 	ssize_t l;
 
+	CHECK_OBJ_NOTNULL(ctx, VRT_CTX_MAGIC);
+	CHECK_OBJ_NOTNULL(ctx->req, REQ_MAGIC);
+
 	if (vmod->priv) {
 		return;
 	}
-
-	CHECK_OBJ_NOTNULL(ctx, VRT_CTX_MAGIC);
-	CHECK_OBJ_NOTNULL(ctx->req, REQ_MAGIC);
 
 	if (ctx->req->req_body_status != REQ_BODY_CACHED){
 		VSLb(ctx->vsl, SLT_VCL_Error,

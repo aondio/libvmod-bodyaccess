@@ -14,7 +14,7 @@ varnish v1 -vcl+backend {
 	import ${vmod_std};
 
 	sub vcl_recv {
-		transbody.cache_req_body(110B);
+		transbody.buffer_req_body(110B);
 		return (hash);
 	}
 

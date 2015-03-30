@@ -13,7 +13,7 @@ varnish v1 -vcl+backend {
 	import transbody from "${vmod_topbuild}/src/.libs/libvmod_transbody.so";
 	import ${vmod_std};
 	sub vcl_recv {
-		transbody.cache_req_body(10KB);
+		transbody.buffer_req_body(10KB);
 		set req.http.x-boolean2 = transbody.rematch_req_body("aRNI", 10000);
 		set req.http.x-boolean1 = transbody.rematch_req_body(".*", 10000);
 		set req.http.x-boolean3 = transbody.rematch_req_body("a", 10000);
@@ -30,6 +30,8 @@ varnish v1 -vcl+backend {
 
 varnish v1 -cliok "param.set debug +syncvsl"
 varnish v1 -cliok "param.set fetch_chunksize 4k"
+varnish v1 -cliok "param.set pcre_match_limit 10000"
+varnish v1 -cliok "param.set pcre_match_limit_recursion 10000"
 
 client c1 {
 	txreq -req "POST" -body {VarNISH}

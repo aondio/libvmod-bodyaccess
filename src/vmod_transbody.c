@@ -21,13 +21,19 @@ vmod_hash_req_body(VRT_CTX)
 	CHECK_OBJ_NOTNULL(ctx, VRT_CTX_MAGIC);
 	struct vmod priv_top = { 0 };
 
+	if (ctx->req->req_body_status != REQ_BODY_CACHED) {
+		VSLb(ctx->vsl, SLT_VCL_Error,
+		   "Uncached req.body");
+		return;
+	}
+
 	if (ctx->method != VCL_MET_HASH) {
 		VSLb(ctx->vsl, SLT_VCL_Error,
 		    "Hash_Req_Body can only be used in vcl_hash{}");
 		return;
 	}
 
-	VRB_Blob(ctx,&priv_top);
+	VRB_Blob(ctx, &priv_top);
 
 	HSH_AddBytes(ctx->req, priv_top.priv,  priv_top.len);
 
@@ -42,7 +48,6 @@ vmod_len_req_body(VRT_CTX)
 	if (ctx->req->req_body_status != REQ_BODY_CACHED) {
 		VSLb(ctx->vsl, SLT_VCL_Error,
 		   "Uncached req.body");
-
 		return (-1);
 	}
 
@@ -64,13 +69,11 @@ vmod_rematch_req_body(VRT_CTX, struct vmod_priv *priv_call, VCL_STRING re,
 
 	if(priv_call->priv == NULL) {
 		t =  VRE_compile(re, 0, &error, &erroroffset);
-
 		if(t == NULL) {
 			VSLb(ctx->vsl, SLT_VCL_Error,
 			    "Regular expression not valid");
 			return (-1);
 		}
-
 		priv_call->priv = t;
 		priv_call->free = free;
 

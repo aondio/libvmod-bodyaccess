@@ -54,8 +54,7 @@ vmod_len_req_body(VRT_CTX)
 }
 
 VCL_INT
-vmod_rematch_req_body(VRT_CTX, struct vmod_priv *priv_call, VCL_STRING re,
-    VCL_INT limit)
+vmod_rematch_req_body(VRT_CTX, struct vmod_priv *priv_call, VCL_STRING re)
 {
  	struct vmod priv_top = { 0 };
 	const char *error;
@@ -91,12 +90,10 @@ vmod_rematch_req_body(VRT_CTX, struct vmod_priv *priv_call, VCL_STRING re,
 
 	}
 
-	cache_param->vre_limits.match = limit;
-	cache_param->vre_limits.match_recursion = limit;
-
 	VRB_Blob(ctx, &priv_top);
+
 	i = VRE_exec(priv_call->priv, priv_top.priv, priv_top.len, 0, 0,
-	    NULL, 0, &cache_param->vre_limits);
+	    NULL, 0, NULL);
 
 	if (i > 0)
 		return (1);

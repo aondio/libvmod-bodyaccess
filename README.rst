@@ -96,7 +96,7 @@ rematch_req_body
 Prototype
         ::
 
-                rematch_req_body(PRIV_CALL, STRING re, INT limit)
+                rematch_req_body(PRIV_CALL, STRING re)
 Return value  
         INT
 Description

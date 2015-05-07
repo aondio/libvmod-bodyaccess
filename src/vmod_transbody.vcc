@@ -1,4 +1,4 @@
-$Module transbody 3 transbody VMOD
+$Module bodyaccess 3 bodyaccess VMOD
 
 $Function INT rematch_req_body(PRIV_CALL, STRING re)
 

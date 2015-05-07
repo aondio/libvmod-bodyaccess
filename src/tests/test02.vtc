@@ -10,16 +10,16 @@ server s1 {
 } -start
 
 varnish v1 -vcl+backend {
-	import transbody from "${vmod_topbuild}/src/.libs/libvmod_transbody.so";
+	import bodyaccess from "${vmod_topbuild}/src/.libs/libvmod_bodyaccess.so";
 	import ${vmod_std};
 
 	sub vcl_recv {
-		transbody.buffer_req_body(110B);
+		bodyaccess.buffer_req_body(110B);
 		return (hash);
 	}
 
 	sub vcl_hash {
-		transbody.hash_req_body();
+		bodyaccess.hash_req_body();
 		return (lookup);
 	}
 

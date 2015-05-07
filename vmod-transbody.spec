@@ -1,5 +1,5 @@
 Summary: Body transformations VMOD for Varnish
-Name: vmod-transbody
+Name: vmod-bodyaccess
 Version: 0.1
 Release: 1%{?dist}
 License: BSD

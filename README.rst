@@ -1,6 +1,6 @@
-==============
-vmod_transbody
-==============
+===============
+vmod_bodyaccess
+===============
 
 ------------------------
 Varnish Transbody Module
@@ -13,7 +13,7 @@ Varnish Transbody Module
 SYNOPSIS
 ========
 
-import transbody;
+import bodyaccess;
 
 DESCRIPTION
 ===========
@@ -42,7 +42,7 @@ Description
 Example
         ::
 
-                bodytrans.buffer_req_body(1KB);
+                bodyaccess.buffer_req_body(1KB);
 
         This will buffer the req.body if its size is smaller than 1KB.
 
@@ -62,8 +62,8 @@ Description
 Example
         ::
 
-                | if (bodytrans.cache_req_body(1KB)) {
-		|     set req.http.x-len = bodytrans.len_req_body();
+                | if (bodyaccess.buffer_req_body(1KB)) {
+		|     set req.http.x-len = bodyaccess.len_req_body();
 		| }
 
 hash_req_body
@@ -83,11 +83,11 @@ Example
         ::
 
                 | sub vcl_recv {
-		|     bodytrans.cache_req_body(1KB);
+		|     bodyaccess.buffer_req_body(1KB);
 		| }
 		|
 		| sub vcl_hash{
-		|     bodytrans.hash_req_body();
+		|     bodyaccess.hash_req_body();
 		| }
 
 rematch_req_body
@@ -109,9 +109,9 @@ Description
 Example
         ::
 
-                | std.cache_req_body(1KB);
+                | std.buffer_req_body(1KB);
 		|
-		| if (std.regex_req_body("FOO") == 1) {
+		| if (bodyaccess.rematch_req_body("FOO") == 1) {
 		|    std.log("is true");
 		| }
 

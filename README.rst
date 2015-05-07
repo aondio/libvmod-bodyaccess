@@ -2,9 +2,9 @@
 vmod_bodyaccess
 ===============
 
-.. image:: https://secure.travis-ci.org/aondio/libvmod-rtstatus.png
+.. image:: https://travis-ci.org/aondio/libvmod-transbody.svg
    :alt: Travis CI badge
-   :target: http://travis-ci.org/aondio/libvmod-rtstatus
+   :target: http://travis-ci.org/aondio/libvmod-transbody
 
 ------------------------
 Varnish Transbody Module

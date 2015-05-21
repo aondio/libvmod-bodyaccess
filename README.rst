@@ -6,9 +6,9 @@ vmod_bodyaccess
    :alt: Travis CI badge
    :target: http://travis-ci.org/aondio/libvmod-bodyaccess
 
-------------------------
-Varnish Transbody Module
-------------------------
+-------------------------
+Varnish Bodyaccess Module
+-------------------------
 
 :Date: 2015-03-03
 :Version: 1.0
@@ -22,7 +22,7 @@ import bodyaccess;
 DESCRIPTION
 ===========
 
-Varnish vmod that lets you do transformations on the request body.
+Varnish vmod that lets you access the request body.
 
 FUNCTIONS
 =========

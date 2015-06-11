@@ -50,6 +50,12 @@ vmod_len_req_body(VRT_CTX)
 		return (-1);
 	}
 
+	if (ctx->method != VCL_MET_RECV) {
+		VSLb(ctx->vsl, SLT_VCL_Error,
+		    "hash_req_body can only be used in vcl_recv{}");
+		return;
+	}
+
 	return (ctx->req->req_bodybytes);
 }
 

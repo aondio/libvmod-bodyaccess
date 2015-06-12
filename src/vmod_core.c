@@ -119,8 +119,8 @@ VRB_Buffer(struct req *req, ssize_t maxsize)
 		if (req->req_bodybytes > maxsize) {
 			req->req_body_status = REQ_BODY_FAIL;
 			req->doclose = SC_RX_BODY;
-			STV_free(st);
-			STV_close();
+			//STV_free(st);
+			//STV_close();
 			l = -1;
 			break;
 		}
@@ -190,7 +190,7 @@ VRB_Blob(VRT_CTX, struct vmod *vmod)
 	}
 
 	assert(ctx->req->req_body_status == REQ_BODY_CACHED);
-	p =(void*)WS_Alloc(ctx->ws, sizeof *p);
+	p = (void*)WS_Alloc(ctx->ws, sizeof *p);
 	AN(p);
 	vmod->priv = p;
 
@@ -206,6 +206,9 @@ VRB_Blob(VRT_CTX, struct vmod *vmod)
 		vmod->len = -1;
 		return;
 	}
+
+	WS_Reset(ctx->ws, ws_f);
+	memset(p, 0, sizeof *p);
 
 	vmod->len = ctx->req->req_bodybytes;
 	vmod->priv = ws_f;

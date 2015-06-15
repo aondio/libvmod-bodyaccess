@@ -60,7 +60,7 @@ Prototype
 Return value
         INT
 Description
-        Returns the request body length.
+        Returns the request body length or -1 if an error occurs. 
 
 	Note that the request body must be buffered.
 Example
@@ -76,7 +76,7 @@ hash_req_body
 Prototype
         ::
 
-                len_req_body()
+                hash_req_body()
 Return value
         VOID
 Description
@@ -104,7 +104,7 @@ Prototype
 Return value  
         INT
 Description
-        Returns -1 if an error occurred.
+        Returns -1 if an error occurrs.
 	Returns 0 if the request body doesn't contain the string *re*.
 	Returns 1 if the request body contains the string *re*.
 

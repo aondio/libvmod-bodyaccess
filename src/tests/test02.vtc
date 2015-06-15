@@ -1,40 +1,40 @@
 varnishtest "Test hash on req body"
-
 server s1 {
 	rxreq
-	txresp
+	txresp -hdr "OK: yes"
 	rxreq
-	txresp
-	rxreq
-	txresp
+	txresp -hdr "OK: no"
 } -start
 
 varnish v1 -vcl+backend {
 	import bodyaccess from "${vmod_topbuild}/src/.libs/libvmod_bodyaccess.so";
-	import ${vmod_std};
-
 	sub vcl_recv {
-		bodyaccess.buffer_req_body(110B);
-		return (hash);
+		if (req.http.foo == "1") {
+			return (hash);
+		}
 	}
 
 	sub vcl_hash {
-		bodyaccess.hash_req_body();
+		if (req.http.foo == "1") {
+			bodyaccess.hash_req_body();
+		}
 		return (lookup);
 	}
-
+        
 } -start
 
 client c1 {
-	txreq -req POST -nolen -hdr "Transfer-encoding: chunked"
-	chunked {BLAS}
-	delay .2
-	chunkedlen 110
-	expect_close
+	txreq -req POST -hdr "foo: 1" -body "BANANE"
+	rxresp
+	expect resp.http.ok == "yes"
+
+	txreq -hdr "foo: 2" 
+	rxresp
+	expect resp.http.ok == "yes"
 } -run
 
-client c1 {
-	txreq -req POST -nolen -hdr "Transfer-encoding: chunked"
+client c2 {
+	txreq -req POST -nolen -hdr "Transfer-encoding: chunked" -hdr "foo: 1"
 	chunked {BLAS}
 	delay .2
 	chunkedlen 90
@@ -43,14 +43,9 @@ client c1 {
 	delay .2
 	chunkedlen 0
 	rxresp
-} -run
+	expect resp.http.ok == "yes"
 
-client c2 {
-	txreq -req POST -url "/banane" -body "FOOBAR"
+	txreq -hdr "foo: 2" 
 	rxresp
-} -run
-
-client c2 {
-	txreq -req GET -url "/banane" -body "FOOBAR"
-	rxresp
+	expect resp.http.ok == "yes"	
 } -run

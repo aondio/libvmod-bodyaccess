@@ -84,6 +84,7 @@ VRB_Buffer(struct req *req, ssize_t maxsize)
 	}
 
 	if (req->req_bodybytes > maxsize) {
+		VSL(SLT_Debug, 0, "req.body too big to be buffered");
 		req->req_body_status = REQ_BODY_FAIL;
 		req->doclose = SC_RX_BODY;
 		return (-1);
@@ -117,6 +118,7 @@ VRB_Buffer(struct req *req, ssize_t maxsize)
 			break;
 		}
 		if (req->req_bodybytes > maxsize) {
+			VSL(SLT_Debug, 0, "req.body too big to be buffered");
 			req->req_body_status = REQ_BODY_FAIL;
 			req->doclose = SC_RX_BODY;
 			//STV_free(st);

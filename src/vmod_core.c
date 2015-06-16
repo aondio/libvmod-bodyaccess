@@ -162,57 +162,37 @@ HSH_AddBytes(const struct req *req, const void *buf, size_t len)
 		SHA256_Update(req->sha256ctx, buf, len);
 }
 
-int
-concat_req_body(struct req *req, void *priv, void *ptr, size_t len)
-{
-	struct ws *ws = priv;
-	(void)req;
 
-	return (!WS_Copy(ws, ptr, len));
+static int __match_proto__(req_body_iter_f)
+IterCopyReqBody(struct req *req, void *priv, void *ptr, size_t l)
+{
+	struct vsb *iter_vsb = priv;
+
+	CHECK_OBJ_NOTNULL(req, REQ_MAGIC);
+	if (l < 0)
+		return (-1);
+	return (VSB_bcat(iter_vsb, ptr, l));
 }
 
 void
 VRB_Blob(VRT_CTX, struct vmod *vmod)
 {
-	struct vmod *p;
-	char *ws_f;
-	ssize_t l;
+	struct vsb *vsb;
+	int l;
 
 	CHECK_OBJ_NOTNULL(ctx, VRT_CTX_MAGIC);
 	CHECK_OBJ_NOTNULL(ctx->req, REQ_MAGIC);
 
-	if (vmod->priv) {
-		return;
-	}
-
-	if (ctx->req->req_body_status != REQ_BODY_CACHED){
-		VSLb(ctx->vsl, SLT_VCL_Error,
-		    "Uncached req.body");
-		return;
-	}
-
-	assert(ctx->req->req_body_status == REQ_BODY_CACHED);
-	p = (void*)WS_Alloc(ctx->ws, sizeof *p);
-	AN(p);
-	vmod->priv = p;
-
-	ws_f = WS_Snapshot(ctx->ws);
-	AN(ws_f);
-	l = HTTP1_IterateReqBody(ctx->req, concat_req_body, ctx->ws);
-
-	if (l < 0 || WS_Copy(ctx->ws, "\0", 1) == NULL) {
+	vsb = VSB_new_auto();
+	l = HTTP1_IterateReqBody(ctx->req, IterCopyReqBody, (void*)vsb);
+	VSB_finish(vsb);
+	if (l < 0) {
+		VSB_delete(vsb);
 		VSLb(ctx->vsl, SLT_VCL_Error,
 		    "Iteration on req.body didn't succeed.");
-		WS_Reset(ctx->ws, ws_f);
-		memset(p, 0, sizeof *p);
-		vmod->len = -1;
 		return;
 	}
 
-	WS_Reset(ctx->ws, ws_f);
-	memset(p, 0, sizeof *p);
-
-	vmod->len = ctx->req->req_bodybytes;
-	vmod->priv = ws_f;
-	return;
+	vmod->priv = VSB_data(vsb);
+	vmod->len = VSB_len(vsb);
 }

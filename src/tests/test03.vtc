@@ -11,13 +11,13 @@ server s1 {
 
 varnish v1 -vcl+backend {
 	import bodyaccess from "${vmod_topbuild}/src/.libs/libvmod_bodyaccess.so";
-	import ${vmod_std};
 	sub vcl_recv {
-		bodyaccess.buffer_req_body(10KB);
-		set req.http.x-boolean2 = bodyaccess.rematch_req_body("aRNI");
-		set req.http.x-boolean1 = bodyaccess.rematch_req_body(".*");
-		set req.http.x-boolean3 = bodyaccess.rematch_req_body("a");
-		set req.http.x-boolean4 = bodyaccess.rematch_req_body("F");
+		if (bodyaccess.buffer_req_body(10KB)) {
+			set req.http.x-boolean1 = bodyaccess.rematch_req_body(".*");
+			set req.http.x-boolean2 = bodyaccess.rematch_req_body("aRNI");
+			set req.http.x-boolean3 = bodyaccess.rematch_req_body("a");
+			set req.http.x-boolean4 = bodyaccess.rematch_req_body("F");
+		}
 	}
 
 	sub vcl_deliver {
@@ -37,13 +37,11 @@ varnish v1 -start
 client c1 {
 	txreq -req "POST" -body {VarNISH}
 	rxresp
+	expect resp.http.x-boolean1 == 1
 	expect resp.http.x-boolean2 == 0
 	expect resp.http.x-boolean3 == 1
 	expect resp.http.x-boolean4 == 0
 } -run
-
-varnish v1 -cliok "param.set debug +syncvsl"
-varnish v1 -cliok "param.set fetch_chunksize 4k"
 
 client c2 {
 	txreq -req POST -nolen -hdr "Transfer-encoding: chunked"
@@ -60,4 +58,6 @@ client c2 {
 	rxresp
 	expect resp.http.x-boolean1 == 1
 	expect resp.http.x-boolean2 == 0
+	expect resp.http.x-boolean3 == 1
+	expect resp.http.x-boolean4 == 1
 } -run

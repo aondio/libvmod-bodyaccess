@@ -35,9 +35,11 @@ Prototype
 
                 buffer_req_body(BYTES size)
 Return value
-	VOID
+	BOOL
 Description
 	Buffers the req.body if it is smaller than *size*.
+	Returns true if the req.body has been buffered, false
+	otherwise.
 
         Caching the req.body makes it possible to retry pass
         operations (POST, PUT).
@@ -46,7 +48,9 @@ Description
 Example
         ::
 
-                bodyaccess.buffer_req_body(1KB);
+                | if (bodyaccess.buffer_req_body(1KB)) {
+		|	....
+		| }
 
         This will buffer the req.body if its size is smaller than 1KB.
 
@@ -113,7 +117,7 @@ Description
 Example
         ::
 
-                | std.buffer_req_body(1KB);
+                | bodyaccess.buffer_req_body(1KB);
 		|
 		| if (bodyaccess.rematch_req_body("FOO") == 1) {
 		|    std.log("is true");

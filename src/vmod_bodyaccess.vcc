@@ -2,7 +2,7 @@ $Module bodyaccess 3 bodyaccess VMOD
 
 $Function INT rematch_req_body(PRIV_CALL, STRING re)
 
-$Function VOID buffer_req_body(BYTES size)
+$Function BOOL buffer_req_body(BYTES size)
 
 $Function VOID hash_req_body()
 

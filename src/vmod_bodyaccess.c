@@ -1,17 +1,22 @@
 #include "vmod_core.h"
 
-VCL_VOID
+VCL_BOOL
 vmod_buffer_req_body(VRT_CTX, double maxsize)
 {
+	int result;
+
 	CHECK_OBJ_NOTNULL(ctx, VRT_CTX_MAGIC);
 	CHECK_OBJ_NOTNULL(ctx->req, REQ_MAGIC);
 
 	if (ctx->method != VCL_MET_RECV) {
 		VSLb(ctx->vsl, SLT_VCL_Error,
 		    "req.body can only be buffered in vcl_recv{}");
-			return;
+		return(-1);
 	}
-	VRB_Buffer(ctx->req, maxsize);
+	result = VRB_Buffer(ctx->req, maxsize);
+	if (result >= 0)
+		return (1);
+	return(-1);
 }
 
 

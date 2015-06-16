@@ -169,8 +169,6 @@ IterCopyReqBody(struct req *req, void *priv, void *ptr, size_t l)
 	struct vsb *iter_vsb = priv;
 
 	CHECK_OBJ_NOTNULL(req, REQ_MAGIC);
-	if (l < 0)
-		return (-1);
 	return (VSB_bcat(iter_vsb, ptr, l));
 }
 

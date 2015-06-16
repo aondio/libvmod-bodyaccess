@@ -20,7 +20,6 @@ varnish v1 -vcl+backend {
 		}
 		return (lookup);
 	}
-        
 } -start
 
 client c1 {
@@ -28,24 +27,18 @@ client c1 {
 	rxresp
 	expect resp.http.ok == "yes"
 
-	txreq -hdr "foo: 2" 
+	txreq -hdr "foo: 2"
 	rxresp
 	expect resp.http.ok == "yes"
 } -run
 
 client c2 {
 	txreq -req POST -nolen -hdr "Transfer-encoding: chunked" -hdr "foo: 1"
-	chunked {BLAS}
+	chunked {BANA}
 	delay .2
-	chunkedlen 90
-	delay .2
-	chunked {FOO}
+	chunked {NE}
 	delay .2
 	chunkedlen 0
 	rxresp
 	expect resp.http.ok == "yes"
-
-	txreq -hdr "foo: 2" 
-	rxresp
-	expect resp.http.ok == "yes"	
 } -run

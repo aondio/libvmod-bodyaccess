@@ -121,8 +121,6 @@ VRB_Buffer(struct req *req, ssize_t maxsize)
 			VSL(SLT_Debug, 0, "req.body too big to be buffered");
 			req->req_body_status = REQ_BODY_FAIL;
 			req->doclose = SC_RX_BODY;
-			//STV_free(st);
-			//STV_close();
 			l = -1;
 			break;
 		}
@@ -167,8 +165,8 @@ static int __match_proto__(req_body_iter_f)
 IterCopyReqBody(struct req *req, void *priv, void *ptr, size_t l)
 {
 	struct vsb *iter_vsb = priv;
-
 	CHECK_OBJ_NOTNULL(req, REQ_MAGIC);
+
 	return (VSB_bcat(iter_vsb, ptr, l));
 }
 
@@ -193,4 +191,5 @@ VRB_Blob(VRT_CTX, struct vmod *vmod)
 
 	vmod->priv = VSB_data(vsb);
 	vmod->len = VSB_len(vsb);
+	VSB_delete(vsb);
 }

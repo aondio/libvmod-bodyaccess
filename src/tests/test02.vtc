@@ -2,38 +2,32 @@ varnishtest "Test hash on req body"
 server s1 {
 	rxreq
 	txresp -hdr "OK: yes"
-	rxreq
-	txresp -hdr "OK: no"
 } -start
 
 varnish v1 -vcl+backend {
 	import bodyaccess from "${vmod_topbuild}/src/.libs/libvmod_bodyaccess.so";
 	sub vcl_recv {
-		if (req.http.foo == "1") {
-			return (hash);
-		}
+		return (hash);
 	}
 
 	sub vcl_hash {
-		if (req.http.foo == "1") {
-			bodyaccess.hash_req_body();
-		}
+		bodyaccess.hash_req_body();
 		return (lookup);
 	}
 } -start
 
 client c1 {
-	txreq -req POST -hdr "foo: 1" -body "BANANE"
+	txreq -req POST -body "BANANE"
 	rxresp
 	expect resp.http.ok == "yes"
 
-	txreq -hdr "foo: 2"
+	txreq
 	rxresp
 	expect resp.http.ok == "yes"
 } -run
 
 client c2 {
-	txreq -req POST -nolen -hdr "Transfer-encoding: chunked" -hdr "foo: 1"
+	txreq -req POST -nolen -hdr "Transfer-encoding: chunked"
 	chunked {BANA}
 	delay .2
 	chunked {NE}

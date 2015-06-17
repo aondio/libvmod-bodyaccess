@@ -13,18 +13,18 @@ varnish v1 -vcl+backend {
 	import bodyaccess from "${vmod_topbuild}/src/.libs/libvmod_bodyaccess.so";
 	sub vcl_recv {
 		if (bodyaccess.buffer_req_body(10KB)) {
-			set req.http.x-boolean1 = bodyaccess.rematch_req_body(".*");
-			set req.http.x-boolean2 = bodyaccess.rematch_req_body("aRNI");
-			set req.http.x-boolean3 = bodyaccess.rematch_req_body("a");
-			set req.http.x-boolean4 = bodyaccess.rematch_req_body("F");
+			set req.http.x-re1 = bodyaccess.rematch_req_body(".*");
+			set req.http.x-re2 = bodyaccess.rematch_req_body("aRNI");
+			set req.http.x-re3 = bodyaccess.rematch_req_body("a");
+			set req.http.x-re4 = bodyaccess.rematch_req_body("F");
 		}
 	}
 
 	sub vcl_deliver {
-		set resp.http.x-boolean1 = req.http.x-boolean1;
-		set resp.http.x-boolean2 = req.http.x-boolean2;
-		set resp.http.x-boolean3 = req.http.x-boolean3;
-		set resp.http.x-boolean4 = req.http.x-boolean4;
+		set resp.http.x-re1 = req.http.x-re1;
+		set resp.http.x-re2 = req.http.x-re2;
+		set resp.http.x-re3 = req.http.x-re3;
+		set resp.http.x-re4 = req.http.x-re4;
 	}
 }
 
@@ -37,10 +37,10 @@ varnish v1 -start
 client c1 {
 	txreq -req "POST" -body {VarNISH}
 	rxresp
-	expect resp.http.x-boolean1 == 1
-	expect resp.http.x-boolean2 == 0
-	expect resp.http.x-boolean3 == 1
-	expect resp.http.x-boolean4 == 0
+	expect resp.http.x-re1 == 1
+	expect resp.http.x-re2 == 0
+	expect resp.http.x-re3 == 1
+	expect resp.http.x-re4 == 0
 } -run
 
 client c2 {
@@ -56,8 +56,8 @@ client c2 {
 	delay .2
 	chunkedlen 0
 	rxresp
-	expect resp.http.x-boolean1 == 1
-	expect resp.http.x-boolean2 == 0
-	expect resp.http.x-boolean3 == 1
-	expect resp.http.x-boolean4 == 1
+	expect resp.http.x-re1 == 1
+	expect resp.http.x-re2 == 0
+	expect resp.http.x-re3 == 1
+	expect resp.http.x-re4 == 1
 } -run

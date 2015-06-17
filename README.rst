@@ -10,9 +10,9 @@ vmod_bodyaccess
 Varnish Bodyaccess Module
 -------------------------
 
-:Date: 2015-03-03
+:Author: Arianna Aondio
+:Date: 2015-06-18
 :Version: 1.0
-:Manual section: 3
 
 SYNOPSIS
 ========
@@ -122,6 +122,8 @@ Example
 		| if (bodyaccess.rematch_req_body("FOO") == 1) {
 		|    std.log("is true");
 		| }
+
+Find more example in example.vcl.
 
 INSTALLATION
 ============

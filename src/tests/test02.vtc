@@ -6,14 +6,18 @@ server s1 {
 
 varnish v1 -vcl+backend {
 	import bodyaccess from "${vmod_topbuild}/src/.libs/libvmod_bodyaccess.so";
+	import std;
+
 	sub vcl_recv {
+	    std.cache_req_body(110B);
 		return (hash);
 	}
 
 	sub vcl_hash {
-		bodyaccess.hash_req_body();
+	    bodyaccess.hash_req_body();
 		return (lookup);
 	}
+
 } -start
 
 client c1 {

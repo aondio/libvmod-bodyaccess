@@ -11,11 +11,11 @@ server s1 {
 
 varnish v1 -vcl+backend {
 	import bodyaccess from "${vmod_topbuild}/src/.libs/libvmod_bodyaccess.so";
+	import std;
 
 	sub vcl_recv {
-		if(bodyaccess.buffer_req_body(110B)) {
-			set req.http.x-len = bodyaccess.len_req_body();
-		}
+		std.cache_req_body(110B);
+		set req.http.x-len = bodyaccess.len_req_body();
 	}
 
 	sub vcl_deliver {

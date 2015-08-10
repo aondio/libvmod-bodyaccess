@@ -1,25 +1,5 @@
 #include "vmod_core.h"
 
-VCL_BOOL
-vmod_buffer_req_body(VRT_CTX, double maxsize)
-{
-	int result;
-
-	CHECK_OBJ_NOTNULL(ctx, VRT_CTX_MAGIC);
-	CHECK_OBJ_NOTNULL(ctx->req, REQ_MAGIC);
-
-	if (ctx->method != VCL_MET_RECV) {
-		VSLb(ctx->vsl, SLT_VCL_Error,
-		    "req.body can only be buffered in vcl_recv{}");
-		return(-1);
-	}
-	result = VRB_Buffer(ctx->req, maxsize);
-	if (result >= 0)
-		return (1);
-	return(-1);
-}
-
-
 VCL_VOID
 vmod_hash_req_body(VRT_CTX)
 {
@@ -39,7 +19,7 @@ vmod_hash_req_body(VRT_CTX)
 	}
 
 	VRB_Blob(ctx, &priv_top);
-	HSH_AddBytes(ctx->req, priv_top.priv,  priv_top.len);
+	HSH_AddBytes(ctx->req, (void*)ctx, priv_top.priv,  priv_top.len);
 
 }
 

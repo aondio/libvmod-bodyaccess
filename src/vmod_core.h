@@ -16,7 +16,7 @@ struct vmod {
 };
 
 int concat_req_body(struct req *req, void *priv, void *ptr, size_t len);
-void HSH_AddBytes(const struct req *req, const void *buf, size_t len);
+void HSH_AddBytes(const struct req *req,void *ctx, const void *buf, size_t len);
 ssize_t http1_iter_req_body(struct req *req, enum req_body_state_e bs,
     void *buf, ssize_t len);
 void VRB_Blob(VRT_CTX, struct vmod *vmod);

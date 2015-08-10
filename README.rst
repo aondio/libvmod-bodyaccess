@@ -27,33 +27,6 @@ Varnish vmod that lets you access the request body.
 FUNCTIONS
 =========
 
-buffer_req_body
----------------
-
-Prototype
-        ::
-
-                buffer_req_body(BYTES size)
-Return value
-	BOOL
-Description
-	Buffers the req.body if it is smaller than *size*.
-	Returns true if the req.body has been buffered, false
-	otherwise.
-
-        Caching the req.body makes it possible to retry pass
-        operations (POST, PUT).
-
-	Note that this function can be used only in vcl_recv.
-Example
-        ::
-
-                | if (bodyaccess.buffer_req_body(1KB)) {
-		|	....
-		| }
-
-        This will buffer the req.body if its size is smaller than 1KB.
-
 len_req_body
 ------------
 
@@ -70,9 +43,8 @@ Description
 Example
         ::
 
-                | if (bodyaccess.buffer_req_body(1KB)) {
-		|     set req.http.x-len = bodyaccess.len_req_body();
-		| }
+                | std.cache_req_body(1KB);
+		| set req.http.x-len = bodyaccess.len_req_body();
 
 hash_req_body
 -------------  
@@ -91,7 +63,7 @@ Example
         ::
 
                 | sub vcl_recv {
-		|     bodyaccess.buffer_req_body(1KB);
+		|     std.cache_req_body(1KB);
 		| }
 		|
 		| sub vcl_hash{
@@ -117,13 +89,16 @@ Description
 Example
         ::
 
-                | bodyaccess.buffer_req_body(1KB);
+                | std.cache_req_body(1KB);
 		|
 		| if (bodyaccess.rematch_req_body("FOO") == 1) {
 		|    std.log("is true");
 		| }
 
 Find more example in example.vcl.
+
+N.B. The request body must be retrieved before doing any operations on it.
+It can be buffered using the cache_req_body() function from libvmod_std.
 
 INSTALLATION
 ============

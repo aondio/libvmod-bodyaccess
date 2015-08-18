@@ -100,6 +100,9 @@ Find more example in example.vcl.
 N.B. The request body must be retrieved before doing any operations on it.
 It can be buffered using the cache_req_body() function from libvmod_std.
 
+These functions applies only to standard REST methods.
+Caching is *not* allowed on PUT requests.
+
 INSTALLATION
 ============
 

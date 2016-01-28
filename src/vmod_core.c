@@ -2,13 +2,14 @@
 #include <sys/time.h>
 
 void
-HSH_AddBytes(const struct req *req, void *ctx, const void *buf, size_t len)
+HSH_AddBytes(const struct req *req, const struct vrt_ctx *ctx,
+    const void *buf, size_t len)
 {
 	CHECK_OBJ_NOTNULL(req, REQ_MAGIC);
 	AN(ctx);
 
 	if (buf != NULL)
-		SHA256_Update(ctx, buf, len);
+		SHA256_Update(ctx->specific, buf, len);
 }
 
 
@@ -22,7 +23,7 @@ IterCopyReqBody(struct req *req, void *priv, void *ptr, size_t l)
 }
 
 void
-VRB_Blob(VRT_CTX, struct vmod *vmod)
+VRB_Blob(VRT_CTX, struct vmod_priv *vmod)
 {
 	struct vsb *vsb;
 	int l;

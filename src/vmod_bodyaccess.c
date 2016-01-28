@@ -4,7 +4,7 @@ VCL_VOID
 vmod_hash_req_body(VRT_CTX)
 {
 	CHECK_OBJ_NOTNULL(ctx, VRT_CTX_MAGIC);
-	struct vmod priv_top = { 0 };
+	struct vmod_priv priv_top = { 0 };
 
 	if (ctx->req->req_body_status != REQ_BODY_CACHED) {
 		VSLb(ctx->vsl, SLT_VCL_Error,
@@ -19,8 +19,7 @@ vmod_hash_req_body(VRT_CTX)
 	}
 
 	VRB_Blob(ctx, &priv_top);
-	HSH_AddBytes(ctx->req, (void*)ctx, priv_top.priv,  priv_top.len);
-
+	HSH_AddBytes(ctx->req, ctx, priv_top.priv,  priv_top.len);
 }
 
 VCL_INT
@@ -47,7 +46,7 @@ vmod_len_req_body(VRT_CTX)
 VCL_INT
 vmod_rematch_req_body(VRT_CTX, struct vmod_priv *priv_call, VCL_STRING re)
 {
- 	struct vmod priv_top = { 0 };
+	struct vmod_priv priv_top = { 0 };
 	const char *error;
 	int erroroffset;
 	vre_t *t = NULL;

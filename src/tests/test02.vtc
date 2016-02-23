@@ -1,38 +1,59 @@
 varnishtest "Test hash on req body"
 server s1 {
 	rxreq
-	txresp -hdr "OK: yes"
+	txresp -body "tre"
+	rxreq
+	txresp
 } -start
 
 varnish v1 -vcl+backend {
 	import bodyaccess from "${vmod_topbuild}/src/.libs/libvmod_bodyaccess.so";
+
 	sub vcl_recv {
-		return (hash);
+		set req.http.x-meth = req.method;
+		if (req.method == "POST") {
+			# Buffer the request body
+			set req.http.x-good = bodyaccess.buffer_req_body(10KB);
+			return (hash);
+		}
 	}
 
 	sub vcl_hash {
+		hash_data(req.method);
 		bodyaccess.hash_req_body();
-		return (lookup);
+	}
+
+	sub vcl_backend_fetch {
+		set bereq.method = bereq.http.x-meth;
+		return(fetch);
+	}
+
+	sub vcl_backend_response {
+		set beresp.ttl = 5m;
+	}
+
+	sub vcl_deliver {
+		if (obj.hits > 0) {
+			set resp.http.X-Cache = "HIT";
+		} else {
+			set resp.http.X-Cache = "MISS";
+		}
 	}
 } -start
 
 client c1 {
-	txreq -req POST -body "BANANE"
+	txreq -req POST -body "banane"
 	rxresp
-	expect resp.http.ok == "yes"
-
-	txreq
+	# it's not in cache -> miss
+	expect resp.http.X-Cache == "MISS"
+	txreq -req POST -body "banane"
 	rxresp
-	expect resp.http.ok == "yes"
+	expect resp.bodylen == 3
+	# this req is in cache -> hit
+	expect resp.http.X-Cache == "HIT"
+	txreq -req GET -body "banane"
+	rxresp
+	# different req.method, not in cache -> miss
+	expect resp.http.X-Cache == "MISS"
 } -run
 
-client c2 {
-	txreq -req POST -nolen -hdr "Transfer-encoding: chunked"
-	chunked {BANA}
-	delay .2
-	chunked {NE}
-	delay .2
-	chunkedlen 0
-	rxresp
-	expect resp.http.ok == "yes"
-} -run

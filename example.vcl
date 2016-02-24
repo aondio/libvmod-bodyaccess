@@ -1,4 +1,5 @@
 # VCL examples.
+# Tip: read up the tests for more complex use-cases
 
 # buffer_req_body(BYTES size)
 # It can be called only from vcl_recv.
@@ -57,7 +58,7 @@ sub vcl_deliver {
 # Note without this part of VCL every request method will be converted
 # to GET on backend side.
 sub vcl_recv {
-        if (req.method == "POST" || req.method == "PUT") {
+        if (req.method == "POST") {
                 set req.http.x-method = req.method;
 	}
 }
@@ -70,7 +71,7 @@ sub vcl_backend_fetch {
 
 # skeleton VCL using all the functions from this Vmod.
 sub vcl_recv {
-        if (req.method == "POST" || req.method == "PUT") {
+        if (req.method == "POST") {
                 set req.http.x-method = req.method;
                 if (bodyaccess.buffer_req_body(110KB)) {
                         set req.http.x-len = bodyaccess.len_req_body();

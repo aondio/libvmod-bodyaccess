@@ -13,11 +13,10 @@ HSH_AddBytes(const struct req *req, const struct vrt_ctx *ctx,
 }
 
 
-static int __match_proto__(req_body_iter_f)
-IterCopyReqBody(struct req *req, void *priv, void *ptr, size_t l)
+static int __match_proto__(objiterate_f)
+IterCopyReqBody(void *priv, int flush, const void *ptr, ssize_t l)
 {
 	struct vsb *iter_vsb = priv;
-	CHECK_OBJ_NOTNULL(req, REQ_MAGIC);
 
 	return (VSB_bcat(iter_vsb, ptr, l));
 }

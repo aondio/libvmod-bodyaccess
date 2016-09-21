@@ -1,3 +1,4 @@
+varnishtest "Test for something"
 server s1 {
         rxreq
         txresp -hdr "OK: yes"

@@ -13,25 +13,22 @@ HSH_AddBytes(const struct req *req, const struct vrt_ctx *ctx,
 }
 
 
-static int __match_proto__(req_body_iter_f)
-IterCopyReqBody(struct req *req, void *priv, void *ptr, size_t l)
+static int __match_proto__(objiterate_f)
+IterCopyReqBody(void *priv, int flush, const void *ptr, ssize_t len)
 {
 	struct vsb *iter_vsb = priv;
-	CHECK_OBJ_NOTNULL(req, REQ_MAGIC);
 
-	return (VSB_bcat(iter_vsb, ptr, l));
+	return (VSB_bcat(iter_vsb, ptr, len));
 }
 
 void
-VRB_Blob(VRT_CTX, struct vmod_priv *vmod)
+VRB_Blob(VRT_CTX, struct vsb *vsb)
 {
-	struct vsb *vsb;
 	int l;
 
 	CHECK_OBJ_NOTNULL(ctx, VRT_CTX_MAGIC);
 	CHECK_OBJ_NOTNULL(ctx->req, REQ_MAGIC);
 
-	vsb = VSB_new_auto();
 	l = VRB_Iterate(ctx->req, IterCopyReqBody, (void*)vsb);
 	VSB_finish(vsb);
 	if (l < 0) {
@@ -40,8 +37,4 @@ VRB_Blob(VRT_CTX, struct vmod_priv *vmod)
 		    "Iteration on req.body didn't succeed.");
 		return;
 	}
-
-	vmod->priv = VSB_data(vsb);
-	vmod->len = VSB_len(vsb);
-	VSB_delete(vsb);
 }

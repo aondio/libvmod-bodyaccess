@@ -4,7 +4,7 @@ VCL_VOID
 vmod_hash_req_body(VRT_CTX)
 {
 	CHECK_OBJ_NOTNULL(ctx, VRT_CTX_MAGIC);
-	struct vmod_priv priv_top = { 0 };
+	struct vsb *vsb;
 
 	if (ctx->req->req_body_status != REQ_BODY_CACHED) {
 		VSLb(ctx->vsl, SLT_VCL_Error,
@@ -18,8 +18,12 @@ vmod_hash_req_body(VRT_CTX)
 		return;
 	}
 
-	VRB_Blob(ctx, &priv_top);
-	HSH_AddBytes(ctx->req, ctx, priv_top.priv,  priv_top.len);
+	vsb = VSB_new_auto();
+
+	VRB_Blob(ctx, vsb);
+	HSH_AddBytes(ctx->req, ctx, VSB_data(vsb),  VSB_len(vsb));
+
+	VSB_delete(vsb);
 }
 
 VCL_INT
@@ -46,8 +50,8 @@ vmod_len_req_body(VRT_CTX)
 VCL_INT
 vmod_rematch_req_body(VRT_CTX, struct vmod_priv *priv_call, VCL_STRING re)
 {
-	struct vmod_priv priv_top = { 0 };
 	const char *error;
+	struct vsb *vsb;
 	int erroroffset;
 	vre_t *t = NULL;
 	int i;
@@ -80,10 +84,13 @@ vmod_rematch_req_body(VRT_CTX, struct vmod_priv *priv_call, VCL_STRING re)
 
 	}
 
-	VRB_Blob(ctx, &priv_top);
+	vsb = VSB_new_auto();
+	VRB_Blob(ctx, vsb);
 
-	i = VRE_exec(priv_call->priv, priv_top.priv, priv_top.len, 0, 0,
+	i = VRE_exec(priv_call->priv, VSB_data(vsb), VSB_len(vsb), 0, 0,
 	    NULL, 0, NULL);
+
+	VSB_delete(vsb);
 
 	if (i > 0)
 		return (1);

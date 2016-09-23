@@ -1,5 +1,7 @@
+varnishtest "cache post request"
 server s1 {
         rxreq
+        expect req.body == "BANANE"
         txresp -hdr "OK: yes"
         rxreq
         txresp -hdr "OK: yes"

@@ -18,7 +18,6 @@ struct vmod {
 int concat_req_body(struct req *req, void *priv, void *ptr, size_t len);
 void HSH_AddBytes(const struct req *req, const struct vrt_ctx *ctx,
 const void *buf, size_t len);
-ssize_t http1_iter_req_body(struct req *req, enum req_body_state_e bs,
-    void *buf, ssize_t len);
-void VRB_Blob(VRT_CTX, struct vmod_priv *vmod);
+ssize_t http1_iter_req_body(void *priv, int flush, const void *ptr, ssize_t len);
+void VRB_Blob(VRT_CTX, struct vsb *vsb);
 int VRB_Buffer(struct req *req, ssize_t maxsize);

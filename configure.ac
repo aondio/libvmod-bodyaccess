@@ -19,6 +19,13 @@ if test "x$ac_cv_prog_cc_c99" = xno; then
 fi
 AC_PROG_CPP
 
+AX_PTHREAD(,[AC_MSG_ERROR([Could not configure pthreads support])])
+
+LIBS="$PTHREAD_LIBS $LIBS"
+CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
+CC="$PTHREAD_CC"
+
+LT_INIT([disable-static])
 AC_PROG_INSTALL
 AC_PROG_LIBTOOL
 AC_PROG_MAKE_SET
@@ -26,13 +33,15 @@ AC_PROG_MAKE_SET
 # Check for rst utilities
 AC_CHECK_PROGS(RST2MAN, [rst2man rst2man.py], "no")
 if test "x$RST2MAN" = "xno"; then
-	AC_MSG_WARN([rst2man not found - not building man pages])
+	AC_MSG_ERROR([rst2man not found - cannot build man pages])
 fi
-AM_CONDITIONAL(HAVE_RST2MAN, [test "x$RST2MAN" != "xno"])
 
 # Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS([sys/stdlib.h])
+
+VMOD_TESTS="$(cd $srcdir/src && echo tests/*.vtc)"
+AC_SUBST(VMOD_TESTS)
 
 # backwards compat with older pkg-config
 # - pull in AC_DEFUN from pkg.m4
@@ -53,6 +62,7 @@ AS_VAR_IF([$1], [""], [$5], [$4])dnl
 ])
 
 PKG_CHECK_MODULES([libvarnishapi], [varnishapi])
+PKG_CHECK_VAR([LIBVARNISHAPI_PREFIX], [varnishapi], [prefix])
 PKG_CHECK_VAR([LIBVARNISHAPI_DATAROOTDIR], [varnishapi], [datarootdir])
 PKG_CHECK_VAR([LIBVARNISHAPI_BINDIR], [varnishapi], [bindir])
 PKG_CHECK_VAR([LIBVARNISHAPI_SBINDIR], [varnishapi], [sbindir])
@@ -62,11 +72,12 @@ AC_SUBST([LIBVARNISHAPI_DATAROOTDIR])
 VARNISH_VMOD_INCLUDES
 VARNISH_VMOD_DIR
 VARNISH_VMODTOOL
+# inherit the prefix from Varnish.
+# acessing ac_ variable because AC_PREFIX_DEFAULT acts too early
+ac_default_prefix=$LIBVARNISHAPI_PREFIX
 
-AC_PATH_PROG([VARNISHTEST], [varnishtest], [],
-    [$LIBVARNISHAPI_BINDIR:$LIBVARNISHAPI_SBINDIR:$PATH])
-AC_PATH_PROG([VARNISHD], [varnishd], [],
-    [$LIBVARNISHAPI_SBINDIR:$LIBVARNISHAPI_BINDIR:$PATH])
+AC_PATH_PROG([VARNISHTEST], [varnishtest], [], [$LIBVARNISHAPI_BINDIR:$PATH])
+AC_PATH_PROG([VARNISHD], [varnishd], [], [$LIBVARNISHAPI_SBINDIR:$PATH])
 
 AC_CONFIG_FILES([
 	Makefile

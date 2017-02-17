@@ -94,6 +94,29 @@ Example
 		| if (bodyaccess.rematch_req_body("FOO") == 1) {
 		|    std.log("is true");
 		| }
+req_body
+-------------
+
+Prototype
+        ::
+
+                req_body()
+Return value
+        STRING
+Description
+        Return available request body to VCL.
+	Note that this function can only be used in vcl_recv and
+	the request body must already be in std buffer.
+        Its intent is for a small body, workspace's storage is used.
+Example
+        ::
+
+                | sub vcl_recv {
+		|     std.cache_req_body(256B);
+                |
+		|     set req.http.body = regsub(bodyaccess.req_body(), "foo", "bar");
+		| }
+
 
 Find more example in example.vcl.
 

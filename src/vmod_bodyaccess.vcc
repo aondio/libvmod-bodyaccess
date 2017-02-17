@@ -5,3 +5,5 @@ $Function INT rematch_req_body(PRIV_CALL, STRING re)
 $Function VOID hash_req_body()
 
 $Function INT len_req_body()
+
+$Function STRING req_body()

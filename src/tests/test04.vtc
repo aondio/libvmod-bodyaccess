@@ -34,7 +34,9 @@ varnish v1 -vcl+backend {
 
 	sub vcl_backend_fetch {
 		# Reuse our method we kept as a header in recv
-		set bereq.method = bereq.http.x-meth;
+		if (bereq.http.x-meth) {
+			set bereq.method = bereq.http.x-meth;
+		}
 		return(fetch);
 	}
 

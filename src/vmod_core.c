@@ -35,13 +35,11 @@ VRB_Blob(VRT_CTX, struct vmod_priv *vmod)
 	l = VRB_Iterate(ctx->req, IterCopyReqBody, (void*)vsb);
 	VSB_finish(vsb);
 	if (l < 0) {
-		VSB_delete(vsb);
 		VSLb(ctx->vsl, SLT_VCL_Error,
 		    "Iteration on req.body didn't succeed.");
 		return;
 	}
 
-	vmod->priv = VSB_data(vsb);
+	vmod->priv = vsb;
 	vmod->len = VSB_len(vsb);
-	VSB_delete(vsb);
 }

@@ -102,3 +102,37 @@ vmod_rematch_req_body(VRT_CTX, struct vmod_priv *priv_call, VCL_STRING re)
 		return (-1);
 
 }
+
+VCL_STRING
+vmod_req_body(VRT_CTX)
+{
+	struct vsb *vsb;
+	char *s;
+
+	CHECK_OBJ_NOTNULL(ctx, VRT_CTX_MAGIC);
+	if (ctx->req->req_body_status != REQ_BODY_CACHED) {
+		VSLb(ctx->vsl, SLT_VCL_Error,
+		   "Unbuffered req.body");
+		return (NULL);
+	}
+
+	if (ctx->method != VCL_MET_RECV) {
+		VSLb(ctx->vsl, SLT_VCL_Error,
+		    "rematch_req_body can be used only in vcl_recv{}");
+		return (NULL);
+	}
+
+	vsb = VSB_new_auto();
+	VRB_Blob(ctx, vsb);
+	s = WS_Alloc(ctx->ws, VSB_len(vsb) + 1);
+	if (s == NULL) {
+		VSLb(ctx->vsl, SLT_VCL_Error,
+		    "workspace can't hold size of req_body (%ld bytes)", VSB_len(vsb));
+		VSB_delete(vsb);
+		return (NULL);
+	}
+	memcpy(s, VSB_data(vsb), VSB_len(vsb));
+	s[VSB_len(vsb)] = 0;
+	VSB_delete(vsb);
+	return (s);
+}

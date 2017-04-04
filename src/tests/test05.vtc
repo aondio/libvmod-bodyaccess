@@ -1,0 +1,27 @@
+varnishtest "test regex match on req body"
+
+server s1 {
+	rxreq
+        expect req.body == "BANANE"
+        expect req.http.foobar == "BANANAS"
+	txresp
+} -start
+
+varnish v1 -vcl+backend {
+	import bodyaccess from "${vmod_topbuild}/src/.libs/libvmod_bodyaccess.so";
+	import std;
+	
+	sub vcl_recv {
+		std.cache_req_body(100B);
+		set req.http.req_body = bodyaccess.req_body();
+		set req.http.foobar = regsub(req.http.req_body, "NE", "NAS");
+                unset req.http.req_body;
+	}
+}
+
+varnish v1 -start
+
+client c1 {
+	txreq -req "POST" -body {BANANE}
+	rxresp
+} -run

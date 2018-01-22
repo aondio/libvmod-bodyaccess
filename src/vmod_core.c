@@ -13,7 +13,7 @@ HSH_AddBytes(const struct req *req, const struct vrt_ctx *ctx,
 }
 
 
-static int __match_proto__(objiterate_f)
+static int v_matchproto_(req_body_iter_f)
 IterCopyReqBody(void *priv, int flush, const void *ptr, ssize_t len)
 {
 	struct vsb *iter_vsb = priv;
